@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alkahest"
+version = "0.1.0"
+description = "Solvent extraction and classification from chemical procedure texts"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Maarten R. Dobbelaere", email = "mrodobbe.Dobbelaere@UGent.be"},
+]
+keywords = ["chemistry", "solvents", "NLP", "NMR", "green chemistry", "USPTO"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "pandas>=2.0",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+rdkit = ["rdkit"]
+ord = ["ord-schema"]
+rxn-insight = ["rxn-insight>=0.1.2"]
+test = [
+    "pytest>=7.0",
+    "pytest-cov",
+]
+docs = [
+    "sphinx>=7.0",
+    "sphinx-rtd-theme",
+    "sphinx-autodoc-typehints",
+    "myst-parser",
+]
+all = ["rdkit", "ord-schema", "rxn-insight>=0.1.2"]
+
+[project.urls]
+Repository = "https://github.com/mrodobbe/alkahest"
+Documentation = "https://alkahest.readthedocs.io"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+alkahest = ["data/*.csv", "data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["alkahest"]
+
+[tool.coverage.report]
+show_missing = true

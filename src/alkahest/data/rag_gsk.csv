@@ -1,0 +1,149 @@
+Solvent,SMILES,Alternative SMILES,RAG
+Water,O,,G
+Lactic acid,CC(C(=O)O)O,,G
+Propionic acid,CCC(=O)O,,G
+Methanesulfonic acid,CS(=O)(=O)O,,A
+Formic acid,C(=O)O,,A
+Acetic acid,CC(=O)O,,A
+1,3-propanediol,C(CO)CO,,G
+1-pentanol,CCCCCO,,G
+2-ethyl hexanol,CCCCC(CC)CO,,G
+1-heptanol,CCCCCCCO,,G
+Ethylene glycol,C(CO)O,,G
+Di(ethylene glycol),C(COCCO)O,,G
+Tri(ethylene glycol),C(COCCOCCO)O,,G
+1,2-propanediol,CC(CO)O,,G
+Benzyl alcohol,C1=CC=C(C=C1)CO,,G
+Isoamyl alcohol,CC(C)CCO,,G
+1-Octanol,CCCCCCCCO,,G
+Glycerol,C(C(CO)O)O,,G
+1,4-butanediol,C(CCO)CO,,G
+Cyclohexanol,C1CCC(CC1)O,,G
+Isobutanol,CC(C)CO,,G
+2-Pentanol,CCCC(C)O,,G
+1-Hexanol,CCCCCCO,,G
+1-Butanol,CCCCO,,G
+1-Propanol,CCCO,,G
+Ethanol,CCO,,G
+2-Butanol,CCC(C)O,,G
+2-Propanol,CC(C)O,,G
+t-Amyl alcohol,CCC(C)(C)O,,G
+1,2-Isopropylidene glycerol,CC1(OCC(O1)CO)C,,A
+t-Butanol,CC(C)(C)O,,A
+Methanol,CO,,A
+Tetrahydrofurfuryl alcohol,C1CC(OC1)CO,,R
+2-Methoxyethanol,COCCO,,R
+Glycerol triacetate,CC(=O)OCC(COC(=O)C)OC(=O)C,,G
+Glycerol diacetate,CC(=O)OCC(CO)OC(=O)C,,G
+Isobutyl acetate,CC(C)COC(=O)C,,G
+Amyl acetate,CCCCCOC(=O)C,,G
+2-Ethylhexyl acetate,CCCCC(CC)COC(=O)C,,G
+Butyl acetate,CCCCOC(=O)C,,G
+Methyl oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OC,,G
+Isoamyl acetate,CC(C)CCOC(=O)C,,G
+Isopropyl acetate,CC(C)OC(=O)C,,G
+Propyl acetate,CCCOC(=O)C,,G
+Dimethyl succinate,COC(=O)CCC(=O)OC,,G
+n-Octyl acetate,CCCCCCCCOC(=O)C,,G
+Ethyl acetate,CCOC(C)=O,CCOC(=O)C,G
+Ethyl lactate,CCOC(=O)C(C)O,,G
+Diethyl succinate,CCOC(=O)CCC(=O)OCC,,A
+Dimethyl adipate,COC(=O)CCCCC(=O)OC,,A
+Gamma-valerolactone,CC1CCC(=O)O1,,A
+Methyl lactate,CC(C(=O)OC)O,,A
+t-Butyl acetate,CC(=O)OC(C)(C)C,,A
+Ethyl formate,CCOC=O,,A
+Methyl acetate,CC(=O)OC,,A
+Methyl propionate,CCC(=O)OC,,A
+Ethyl propionate,CCC(=O)OCC,,A
+Methyl formate,COC=O,,R
+Propylene carbonate,CC1COC(=O)O1,,G
+Ethylene carbonate,C1COC(=O)O1,,G
+Diethyl carbonate,CCOC(=O)OCC,,G
+Dimethyl carbonate,COC(=O)OC,,A
+Butylene carbonate,CCC1COC(=O)O1,,A
+Cyclopentanone,C1CCC(=O)C1,,G
+Cyclohexanone,C1CCC(=O)CC1,,G
+3-Pentanone,CCC(=O)CC,,G
+Methylisobutyl ketone,CC(C)CC(=O)C,,G
+2-Pentanone,CCCC(=O)C,,G
+Methylethyl ketone,CCC(=O)C,,A
+Acetone,CC(C)=O,CC(=O)C,A
+2,4,6-Collidine,CC1=CC(=NC(=C1)C)C,,G
+Anisole,COC1=CC=CC=C1,,G
+Ethoxybenzene,CCOC1=CC=CC=C1,,G
+p-Xylene,CC1=CC=C(C=C1)C,,A
+Mesitylene,CC1=CC(=CC(=C1)C)C,,A
+p-Cymene,CC1=CC=C(C=C1)C(C)C,,A
+Cumene,CC(C)C1=CC=CC=C1,,A
+Toluene,Cc1ccccc1,CC1=CC=CC=C1,A
+Trifluorotoluene,C1=CC=C(C=C1)C(F)(F)F,,A
+Pyridine,c1ccncc1,C1=CC=NC=C1,R
+Benzene,c1ccccc1,C1=CC=CC=C1,R
+Isooctane,CC(C)CC(C)(C)C,,A
+cis-Decalin,C1CCC2CCCCC2C1,,A
+Heptane,CCCCCCC,,A
+L-Limonene,CC1=CC[C@H](CC1)C(=C)C,,A
+Cyclohexane,C1CCCCC1,,A
+D-Limonene,CC1=CC[C@@H](CC1)C(=C)C,,A
+Methyl cyclohexane,CC1CCCCC1,,A
+Methylcyclopentane,CC1CCCC1,,R
+Pentane,CCCCC,,R
+2-Methylpentane,CCCC(C)C,,R
+Hexane,CCCCCC,,R
+Diethylene glycol monobutyl ether,CCCCOCCOCCO,,G
+Dimethyl isosorbide,CO[C@@H]1CO[C@H]2[C@@H]1OC[C@@H]2OC,,A
+Dibutyl ether,CCCCOCCCC,,A
+t-Amyl methyl ether,CCC(C)(C)OC,,A
+1,2,3-trimethoxypropane,COCC(COC)OC,,A
+Diphenyl ether,C1=CC=C(C=C1)OC2=CC=CC=C2,,A
+t-Butyl ethyl ether,CCOC(C)(C)C,,A
+1,3-Dioxolane,C1COCO1,,A
+Cyclopentyl methyl ether,COC1CCCC1,,A
+Diethoxymethane,CCOCOCC,,A
+2-Methyltetrahydrofuran,CC1CCCO1,,A
+t-Butylmethyl ether,CC(C)(C)OC,,R
+Diisopropyl ether,CC(C)OC(C)C,,R
+Dimethoxymethane,COCOC,,R
+Tetrahydrofuran,C1CCOC1,,R
+Bis(2-methoxyethyl) ether,COCCOCCOC,,R
+1,4-Dioxane,C1COCCO1,,R
+Diethyl ether,CCOCC,,R
+1,2-Dimethoxyethane,COCCOC,,R
+Dimethyl ether,COC,,R
+Dimethylpropylene urea,CN1CCCN(C1=O)C,,A
+Dimethyl sulfoxide,CS(C)=O,CS(=O)C,A
+1,3-Dimethyl-2-imidazolidinone,CN1CCN(C1=O)C,,A
+Acetonitrile,CC#N,,A
+Propanenitrile,CCC#N,,A
+Sulfolane,C1CCS(=O)(=O)C1,,R
+Formamide,C(=O)N,,R
+N-Methyl pyrrolidone,CN1CCCC1=O,,R
+Dimethyl acetamide,CC(=O)N(C)C,,R
+N-Ethylpyrrolidone,CCN1CCCC1=O,,R
+N-Methylformamide,CNC=O,,R
+Dimethyl formamide,CN(C)C=O,,R
+Tetramethylurea,CN(C)C(=O)N(C)C,,R
+Carbon disulfide,C(=S)=S,,R
+1,2,4-Trichlorobenzene,C1=CC(=C(C=C1Cl)Cl)Cl,,R
+Chlorobenzene,C1=CC=C(C=C1)Cl,,R
+1,2-Dichlorobenzene,C1=CC=C(C(=C1)Cl)Cl,,R
+Trichloroacetonitrile,C(#N)C(Cl)(Cl)Cl,,A
+Perfluorotoluene,C1(=C(C(=C(C(=C1F)F)F)F)F)C(F)(F)F,,R
+Fluorobenzene,C1=CC=C(C=C1)F,,R
+Dichloromethane,ClCCl,C(Cl)Cl,R
+1,2-Dichloroethane,ClCCCl,,R
+Perfluorocyclohexane,C1(C(C(C(C(C1(F)F)(F)F)(F)F)(F)F)(F)F)(F)F,,R
+Chloroform,ClC(Cl)Cl,C(Cl)(Cl)Cl,R
+Trichloroacetic acid,C(=O)(C(Cl)(Cl)Cl)O,,R
+Perfluorohexane,C(C(C(C(F)(F)F)(F)F)(F)F)(C(C(F)(F)F)(F)F)(F)F,,R
+Carbon tetrachloride,ClC(Cl)(Cl)Cl,C(Cl)(Cl)(Cl)Cl,R
+2,2,2-Trifluoroethanol,C(C(F)(F)F)O,,R
+Furfural,C1=COC(=C1)C=O,,R
+N,N-Dimethyldecanamide,CCCCCCCCCC(=O)N(C)C,,A
+Dihydrolevoglucosenone,C1CC(=O)[C@@H]2OC[C@H]1O2,,A
+N,N-Dimethyloctanamide,CCCCCCCC(=O)N(C)C,,A
+N,N-Dimethylaniline,CN(C)C1=CC=CC=C1,,A
+Acetic anhydride,CC(=O)OC(=O)C,,A
+Nitromethane,C[N+](=O)[O-],,R
+Triethylamine,CCN(CC)CC,,R

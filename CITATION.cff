@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the paper it accompanies."
+title: "Alkahest: solvent extraction and classification from chemical procedure texts"
+abstract: >-
+  Rule-based NLP package that extracts solvents from experimental procedure
+  texts, classifies them by experimental role (reaction, workup, purification,
+  analytical), maps NMR solvent mentions to canonical SMILES, and scores
+  solvents with the GSK Solvent Selection Guide.
+type: software
+authors:
+  - family-names: Dobbelaere
+    given-names: Maarten R.
+    email: mrodobbe.Dobbelaere@UGent.be
+    affiliation: Ghent University
+  - family-names: Sneddon
+    given-names: Helen F.
+    affiliation: University of York
+version: 0.1.0
+license-url: "https://github.com/mrodobbe/Alkahest/blob/master/LICENSE"
+repository-code: "https://github.com/mrodobbe/Alkahest"
+url: "https://solventexplorer.com"
+keywords:
+  - chemistry
+  - solvents
+  - green chemistry
+  - natural language processing
+  - USPTO
+preferred-citation:
+  type: article
+  title: "The Stubborn Persistence of Toxic Solvents in Chemical Synthesis"
+  authors:
+    - family-names: Dobbelaere
+      given-names: Maarten R.
+    - family-names: Sneddon
+      given-names: Helen F.
+  journal: "Angewandte Chemie International Edition"
+  year: 2026

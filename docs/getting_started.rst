@@ -8,15 +8,21 @@ Install the core package:
 
 .. code-block:: bash
 
-   pip install alkahest
+   pip install alkahest-chem
 
-Or install from source:
+Or install the development version from a local clone:
 
 .. code-block:: bash
 
-   git clone https://github.com/mrodobbe/alkahest.git
-   cd alkahest
+   git clone https://github.com/mrodobbe/Alkahest.git
+   cd Alkahest
    pip install .
+
+.. warning::
+
+   The distribution is named ``alkahest-chem`` and the import name is
+   ``alkahest``. Do **not** run ``pip install alkahest``: that name belongs to
+   an unrelated computer algebra system on PyPI.
 
 Optional dependencies
 ^^^^^^^^^^^^^^^^^^^^^
@@ -25,26 +31,26 @@ For RDKit support (SMILES canonicalization):
 
 .. code-block:: bash
 
-   pip install "alkahest[rdkit]"
+   pip install "alkahest-chem[rdkit]"
 
 For reading `Open Reaction Database <https://open-reaction-database.org/>`_ (ORD) files:
 
 .. code-block:: bash
 
-   pip install "alkahest[ord]"
+   pip install "alkahest-chem[ord]"
 
 For `Rxn-INSIGHT <https://github.com/mrodobbe/Rxn-INSIGHT>`_ integration
 (reaction classification from ORD data):
 
 .. code-block:: bash
 
-   pip install "alkahest[rxn-insight]"
+   pip install "alkahest-chem[rxn-insight]"
 
 For everything:
 
 .. code-block:: bash
 
-   pip install "alkahest[all]"
+   pip install "alkahest-chem[all]"
 
 
 Quick Example
@@ -57,16 +63,18 @@ Extract solvents from a procedure text, score them, and map NMR solvents:
    from alkahest import extract_solvents_categorized, score_solvent, map_nmr_solvent
 
    result = extract_solvents_categorized("""
-       The compound was dissolved in THF (20 mL) and stirred for 2 h.
+       The compound (1.0 g) was dissolved in THF (20 mL) and stirred for 2 h.
        The mixture was quenched with water and extracted with ethyl acetate.
-       Purification by column chromatography (silica, hexanes/EtOAc).
-       1H NMR (CDCl3): delta 7.45 (d, 2H).
+       The combined organic layers were washed with brine and concentrated.
+       Purification by column chromatography (silica gel, hexanes/EtOAc 4:1)
+       gave the product as a white solid (0.85 g, 78%), mp 112-114 C.
+       1H NMR (400 MHz, CDCl3): delta 7.45 (d, 2H).
    """)
    print(result)
    # CategorizedSolvents(
    #   reaction=['thf'],
-   #   workup=['water', 'ethyl acetate'],
-   #   purification=['hexanes', 'ethyl acetate'],
+   #   workup=['ethyl acetate', 'water'],
+   #   purification=['hexanes', 'etoac'],
    #   analytical=['cdcl3']
    # )
 

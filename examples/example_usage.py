@@ -34,15 +34,15 @@ reaction was stirred at room temperature for 2 hours. The mixture was
 quenched with water and extracted with ethyl acetate (3 x 30 mL). The
 combined organic layers were washed with brine, dried over Na2SO4, and
 concentrated. Purification by column chromatography (silica gel, hexanes/
-ethyl acetate 4:1) gave the product as a white solid. 1H NMR (400 MHz,
-CDCl3): delta 7.45 (d, J=8.0 Hz, 2H).
+ethyl acetate 4:1) gave the product as a white solid (0.85 g, 78%),
+mp 112-114 degrees C. 1H NMR (400 MHz, CDCl3): delta 7.45 (d, J=8.0 Hz, 2H).
 """
 result = extract_solvents_categorized(procedure)
 print(result)
 # CategorizedSolvents(
 #   reaction=['thf'],
-#   workup=['water', 'ethyl acetate', 'brine'],
-#   purification=['hexanes', 'ethyl acetate'],
+#   workup=['ethyl acetate', 'water'],
+#   purification=['ethyl acetate', 'hexanes'],
 #   analytical=['cdcl3']
 # )
 
@@ -68,6 +68,8 @@ print(score_solvent("CS(C)=O"))   # DMSO -> A (Amber)
 
 # Deuterated solvents are mapped to parents for scoring
 print(score_solvent("[2H]C(Cl)(Cl)Cl"))  # CDCl3 -> scored as CHCl3 -> R
+print(score_solvent("COc1ccccc1"))       # Anisole -> G
+print(score_solvent("CCN(C(C)C)C(C)C"))  # DIPEA: not in the guide -> Unknown
 
 # =====================================================================
 # Step 5: Map NMR solvent names to canonical SMILES

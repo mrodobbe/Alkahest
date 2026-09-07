@@ -22,19 +22,19 @@ procedure text and returns solvents classified into four categories:
 
    result = extract_solvents_categorized("""
        A solution of the amine (1.5 g) in dichloromethane (30 mL) was treated
-       with triethylamine (2 eq) and acyl chloride (1.1 eq) at 0 C. After 2 h,
+       with K2CO3 (2 eq) and acyl chloride (1.1 eq) at 0 C. After 2 h,
        the reaction was quenched with sat. NaHCO3 and extracted with DCM
        (3 x 20 mL). The combined organics were dried over MgSO4 and concentrated.
        The residue was purified by flash chromatography (hexanes -> 50% EtOAc
-       in hexanes) to afford the product.
-       1H NMR (500 MHz, DMSO-d6): delta 8.21 (s, 1H).
+       in hexanes) to afford the product as a colourless oil (1.2 g, 76%).
+       Data for the product: 1H NMR (500 MHz, DMSO-d6): delta 8.21 (s, 1H).
    """)
 
    print(result)
    # CategorizedSolvents(
    #   reaction=['dichloromethane'],
    #   workup=['dcm'],
-   #   purification=['hexanes', 'ethyl acetate'],
+   #   purification=['hexanes', 'etoac'],
    #   analytical=['dmso-d6']
    # )
 
@@ -196,10 +196,14 @@ Use :func:`~alkahest.get_gsk_guide` to access the full guide as a DataFrame:
 
    guide = get_gsk_guide()
    print(guide.head())
-   #              Solvent   SMILES Alternative SMILES RAG
-   # 0            Water        O                        G
-   # 1          Methanol       CO                       A
+   #            Solvent        SMILES Alternative SMILES Canonical SMILES RAG
+   # 0            Water             O                NaN                O   G
+   # 1      Lactic acid   CC(C(=O)O)O                NaN     CC(O)C(=O)O   G
    # ...
+
+The ``Canonical SMILES`` column is pre-computed with RDKit so that lookups
+succeed on canonical input without RDKit installed. When RDKit *is* available,
+the query SMILES is canonicalized too, so any valid notation resolves.
 
 
 NMR Solvent Mapping
@@ -231,7 +235,7 @@ The function returns ``None`` for unrecognized solvents.
 Conventions
 -----------
 
-- SMILES strings are canonicalized via RDKit where available
+- SMILES strings are stored in RDKit canonical form
 - Multiple solvents within a category are joined with ``.`` (dot-separated SMILES)
 - Categories without solvents use the string ``"solvent-free"``
 - NMR solvent mixtures use ``|`` as separator in curated strings

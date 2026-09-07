@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "alkahest"
+name = "alkahest-chem"
 version = "0.1.0"
 description = "Solvent extraction and classification from chemical procedure texts"
 readme = "README.md"
@@ -15,6 +15,7 @@ authors = [
 keywords = ["chemistry", "solvents", "NLP", "NMR", "green chemistry", "USPTO"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "License :: Other/Proprietary License",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Programming Language :: Python :: 3",
@@ -44,8 +45,9 @@ docs = [
 all = ["rdkit", "ord-schema", "rxn-insight>=0.1.2"]
 
 [project.urls]
-Repository = "https://github.com/mrodobbe/alkahest"
-Documentation = "https://alkahest.readthedocs.io"
+Homepage = "https://solventexplorer.com"
+Repository = "https://github.com/mrodobbe/Alkahest"
+Documentation = "https://github.com/mrodobbe/Alkahest/tree/master/docs"
 
 [tool.setuptools.packages.find]
 where = ["src"]

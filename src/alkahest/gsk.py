@@ -8,6 +8,11 @@ Solvent Selection Guide. For solvent mixtures, the worst score is used
 Deuterated solvents are mapped to their non-deuterated parent compounds
 before scoring.
 
+Lookups are made on canonical SMILES. The shipped guide carries a
+pre-computed ``Canonical SMILES`` column so that lookups succeed without
+RDKit installed; when RDKit is available the query SMILES is canonicalized
+too, so arbitrary input notations also resolve.
+
 If you use the GSK scoring functionality, please cite the original guide:
 
     Alder, C. M.; Hayler, J. D.; Henderson, R. K.; Redman, A. M.; Shukla, L.;
@@ -22,8 +27,18 @@ from typing import Optional
 import pandas as pd
 
 _GSK_GUIDE: Optional[pd.DataFrame] = None
+_SMILES_TO_RAG: Optional[dict[str, str]] = None
 
-# Deuterated -> non-deuterated SMILES mapping for GSK scoring
+# Severity ordering used to pick the worst component of a mixture.
+_SEVERITY = {"G": 0, "A": 1, "R": 2}
+_INV_SEVERITY = {v: k for k, v in _SEVERITY.items()}
+
+# Sentinel values that carry no solvent identity.
+_NON_SOLVENT = {"", "solvent-free", "not-reported", "NEAT"}
+
+# Deuterated -> non-deuterated SMILES mapping for GSK scoring. Used as the
+# fallback when RDKit is not installed; with RDKit, isotope labels are
+# stripped generically so any deuterated solvent resolves to its parent.
 _DEUTERATED_TO_PARENT = {
     "[2H]C(Cl)(Cl)Cl": "ClC(Cl)Cl",  # CDCl3 -> CHCl3
     "[2H]C([2H])([2H])S(=O)C([2H])([2H])[2H]": "CS(C)=O",  # DMSO-d6 -> DMSO
@@ -36,7 +51,13 @@ _DEUTERATED_TO_PARENT = {
     "[2H]c1c([2H])c([2H])nc([2H])c1[2H]": "c1ccncc1",  # Pyridine-d5 -> Pyridine
     "[2H]C1([2H])OC([2H])([2H])C([2H])([2H])C1([2H])[2H]": "C1CCOC1",  # THF-d8
     "[2H]C([2H])([2H])N(C([2H])([2H])[2H])C(=O)[2H]": "CN(C)C=O",  # DMF-d7
+    "[2H]C([2H])([2H])N(C([2H])([2H])[2H])C([2H])=O": "CN(C)C=O",  # DMF-d7 (alt)
     "[2H]C([2H])([2H])c1c([2H])c([2H])c([2H])c([2H])c1[2H]": "Cc1ccccc1",  # Toluene-d8
+    "[2H]C1([2H])OC([2H])([2H])C([2H])([2H])OC1([2H])[2H]": "C1COCCO1",  # Dioxane-d8
+    "[2H]C([2H])([2H])C(=O)O[2H]": "CC(=O)O",  # Acetic-acid-d4
+    "[2H]C([2H])([2H])C([2H])([2H])O[2H]": "CCO",  # EtOD-d6 -> EtOH
+    "[2H]C([2H])([2H])[N+](=O)[O-]": "C[N+](=O)[O-]",  # Nitromethane-d3
+    "FC(F)(F)C(=O)O[2H]": "O=C(O)C(F)(F)F",  # TFA-d
 }
 
 
@@ -50,41 +71,77 @@ def get_gsk_guide() -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        DataFrame with columns: Solvent, SMILES, Alternative SMILES, RAG.
+        DataFrame with columns: Solvent, SMILES, Alternative SMILES,
+        Canonical SMILES, RAG.
     """
     global _GSK_GUIDE
     if _GSK_GUIDE is None:
         data_path = resources.files("alkahest") / "data" / "rag_gsk.csv"
-        # CSV has unquoted commas in solvent names (e.g. "1,3-propanediol").
-        # Parse by splitting from the right: RAG is last, Alt SMILES second-to-last,
-        # SMILES third-to-last, everything else is the solvent name.
-        rows = []
-        with open(data_path) as f:
-            next(f)  # skip header
-            for line in f:
-                parts = line.strip().split(",")
-                rag = parts[-1]
-                alt_smiles = parts[-2] if len(parts) > 3 else ""
-                smiles = parts[-3] if len(parts) > 3 else parts[-2]
-                name = ",".join(parts[: -3 if len(parts) > 3 else -2])
-                rows.append(
-                    {"Solvent": name, "SMILES": smiles, "Alternative SMILES": alt_smiles, "RAG": rag}
-                )
-        _GSK_GUIDE = pd.DataFrame(rows)
+        with data_path.open(encoding="utf-8") as f:
+            _GSK_GUIDE = pd.read_csv(f)
     return _GSK_GUIDE
 
 
+def _canonicalize(smiles: str) -> Optional[str]:
+    """Canonical SMILES via RDKit, or None if RDKit is absent or parsing fails."""
+    try:
+        from rdkit import Chem
+    except ImportError:
+        return None
+    mol = Chem.MolFromSmiles(smiles)
+    return Chem.MolToSmiles(mol) if mol is not None else None
+
+
+def _strip_isotopes(smiles: str) -> Optional[str]:
+    """Canonical SMILES with isotope labels removed (CDCl3 -> CHCl3)."""
+    try:
+        from rdkit import Chem
+    except ImportError:
+        return None
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return None
+    for atom in mol.GetAtoms():
+        atom.SetIsotope(0)
+    return Chem.MolToSmiles(Chem.RemoveHs(mol))
+
+
 def _build_smiles_to_rag() -> dict[str, str]:
-    """Build lookup from SMILES -> RAG score."""
-    guide = get_gsk_guide()
-    mapping = {}
-    for _, row in guide.iterrows():
-        smiles = row["SMILES"]
-        rag = row["RAG"]
-        mapping[smiles] = rag
-        if pd.notna(row.get("Alternative SMILES")):
-            mapping[row["Alternative SMILES"]] = rag
-    return mapping
+    """Build (and cache) the lookup from every known SMILES spelling -> RAG score."""
+    global _SMILES_TO_RAG
+    if _SMILES_TO_RAG is None:
+        guide = get_gsk_guide()
+        mapping: dict[str, str] = {}
+        columns = ["SMILES", "Alternative SMILES", "Canonical SMILES"]
+        for _, row in guide.iterrows():
+            rag = row["RAG"]
+            for column in columns:
+                smiles = row.get(column)
+                if pd.notna(smiles) and smiles:
+                    mapping[smiles] = rag
+        _SMILES_TO_RAG = mapping
+    return _SMILES_TO_RAG
+
+
+def _score_component(component: str, lookup: dict[str, str]) -> Optional[str]:
+    """Resolve one SMILES component to a RAG score, or None if unknown."""
+    rag = lookup.get(component)
+    if rag is not None:
+        return rag
+
+    parent = _DEUTERATED_TO_PARENT.get(component)
+    if parent is not None and parent in lookup:
+        return lookup[parent]
+
+    canonical = _canonicalize(component)
+    if canonical is not None and canonical in lookup:
+        return lookup[canonical]
+
+    stripped = _strip_isotopes(component)
+    if stripped is not None and stripped in lookup:
+        return lookup[stripped]
+
+    return None
 
 
 def score_solvent(smiles: str) -> str:
@@ -108,27 +165,20 @@ def score_solvent(smiles: str) -> str:
         "G" (green/few issues), "A" (amber/some issues), "R" (red/major issues),
         or "Unknown" if the solvent is not in the guide.
     """
-    if not smiles or smiles in ("solvent-free", "not-reported"):
+    if not smiles or smiles in _NON_SOLVENT:
         return "Unknown"
 
     lookup = _build_smiles_to_rag()
-    severity = {"G": 0, "A": 1, "R": 2}
-
-    components = smiles.split(".")
     worst = -1
-    all_known = True
 
-    for component in components:
-        # Map deuterated to parent
-        parent = _DEUTERATED_TO_PARENT.get(component, component)
-        rag = lookup.get(parent)
-        if rag is None:
-            all_known = False
-        else:
-            worst = max(worst, severity.get(rag, -1))
+    for component in smiles.split("."):
+        if not component or component in _NON_SOLVENT:
+            continue
+        rag = _score_component(component, lookup)
+        if rag is not None:
+            worst = max(worst, _SEVERITY.get(rag, -1))
 
     if worst == -1:
         return "Unknown"
 
-    inv_severity = {v: k for k, v in severity.items()}
-    return inv_severity[worst]
+    return _INV_SEVERITY[worst]

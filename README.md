@@ -20,7 +20,7 @@ Chemical Synthesis* by Maarten R. Dobbelaere and Helen F. Sneddon, accepted in
 
 An interactive companion to the study, which lets you look up the solvents
 actually used for a given reaction type across 1.34M USPTO reactions
-(1976-2016), is available at **[solventexplorer.com](https://solventexplorer.com)**.
+(1976-2016), will be released soon.
 
 ## Installation
 

@@ -146,3 +146,120 @@ class TestExtractSolventsBatch:
         assert len(result) == 1
         assert "SOLV_RXN" in result.columns
         assert result["SOLV_RXN"].iloc[0] != "solvent-free"
+
+
+class TestPhaseBoundaries:
+    def test_no_boundaries_in_a_reaction_only_procedure(self):
+        from alkahest import find_phase_boundaries
+
+        boundaries = find_phase_boundaries("The solid was dissolved in THF.")
+        assert boundaries == {"workup": None, "purification": None, "analytical": None}
+
+    def test_each_phase_is_located(self):
+        from alkahest import find_phase_boundaries
+
+        text = (
+            "Dissolved in THF. The mixture was quenched with water. "
+            "Purified by column chromatography. 1H NMR (CDCl3): 7.2."
+        )
+        boundaries = find_phase_boundaries(text)
+        assert boundaries["workup"] < boundaries["purification"]
+        assert boundaries["purification"] < boundaries["analytical"]
+
+    def test_earliest_marker_wins(self):
+        from alkahest import find_phase_boundaries
+
+        text = "Purified by recrystallisation, then by column chromatography."
+        # "recrystalli" precedes "column", so it sets the boundary.
+        assert find_phase_boundaries(text)["purification"] == text.lower().index(
+            "recrystalli"
+        )
+
+
+class TestCompoundNameFiltering:
+    def test_solvent_name_inside_a_substituent_is_skipped(self):
+        # "ether" inside a parenthesised substituent list is part of a name.
+        result = extract_solvents_categorized(
+            "(4-methylphenyl)ether derivatives were prepared."
+        )
+        assert "CCOCC" not in result.get_reaction_smiles()
+
+    def test_name_ending_in_a_chemical_suffix_is_skipped(self):
+        result = extract_solvents_categorized("The benzyl-toluene adduct was isolated.")
+        assert "Cc1ccccc1" not in result.get_reaction_smiles()
+
+    def test_a_genuine_mention_still_matches(self):
+        result = extract_solvents_categorized("The residue was taken up in toluene.")
+        assert "Cc1ccccc1" in result.get_reaction_smiles()
+
+
+class TestClassificationRules:
+    def test_extracted_with_marks_workup(self):
+        result = extract_solvents_categorized(
+            "The residue was suspended and then extracted with diethyl ether."
+        )
+        assert "CCOCC" in result.get_workup_smiles()
+
+    def test_washed_with_marks_workup(self):
+        result = extract_solvents_categorized(
+            "The organics were washed with water and dried."
+        )
+        assert "O" in result.get_workup_smiles()
+
+    def test_anhydrous_solvent_after_workup_stays_reaction(self):
+        result = extract_solvents_categorized(
+            "The mixture was quenched with water. The residue was treated "
+            "in anhydrous toluene and heated for 3 h."
+        )
+        assert "Cc1ccccc1" in result.get_reaction_smiles()
+
+    def test_solvent_after_the_nmr_marker_is_analytical(self):
+        result = extract_solvents_categorized(
+            "Dissolved in THF. 1H NMR shows the product dissolved in benzene."
+        )
+        assert "c1ccccc1" in result.get_analytical_smiles()
+
+    def test_bare_mention_without_cues_defaults_to_reaction(self):
+        result = extract_solvents_categorized("Toluene (5 mL) was added.")
+        assert "Cc1ccccc1" in result.get_reaction_smiles()
+
+    def test_non_string_input_is_tolerated(self):
+        assert extract_solvents_categorized(123) == CategorizedSolvents()
+        assert extract_solvents_categorized(float("nan")) == CategorizedSolvents()
+
+
+class TestDictionaryIntegrity:
+    def test_keys_are_lowercase_and_values_are_smiles(self):
+        from alkahest import DEUTERATED_SOLVENTS, SOLVENT_DICT
+
+        for dictionary in (SOLVENT_DICT, DEUTERATED_SOLVENTS):
+            for name, smiles in dictionary.items():
+                assert name == name.lower(), name
+                assert smiles and not smiles.isspace(), name
+
+    def test_deuterated_entries_carry_isotope_labels(self):
+        from alkahest import DEUTERATED_SOLVENTS
+
+        for name, smiles in DEUTERATED_SOLVENTS.items():
+            assert "[2H]" in smiles, name
+
+
+class TestClassificationEdges:
+    def test_solvent_inside_an_unclosed_substituent_is_skipped(self):
+        result = extract_solvents_categorized(
+            "The product (3-phenyl toluene adduct was characterised."
+        )
+        assert "Cc1ccccc1" not in result.get_reaction_smiles()
+
+    def test_added_to_quench_marks_workup(self):
+        result = extract_solvents_categorized("Water was added to quench the reaction.")
+        assert "O" in result.get_workup_smiles()
+
+    def test_solvent_far_past_the_nmr_marker_is_analytical(self):
+        # Beyond the local context window, the phase boundary alone decides.
+        text = (
+            "1H NMR data were recorded for the purified material as described "
+            "above and the residue also contained toluene."
+        )
+        result = extract_solvents_categorized(text)
+        assert "Cc1ccccc1" in result.get_analytical_smiles()

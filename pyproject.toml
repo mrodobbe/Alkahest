@@ -35,6 +35,8 @@ rxn-insight = ["rxn-insight>=0.1.2"]
 test = [
     "pytest>=7.0",
     "pytest-cov",
+    "pyarrow",
+    "rdkit",
 ]
 docs = [
     "sphinx>=7.0",
@@ -43,6 +45,10 @@ docs = [
     "myst-parser",
 ]
 all = ["rdkit", "ord-schema", "rxn-insight>=0.1.2"]
+
+[project.scripts]
+alkahest-extract = "alkahest.cli:extract_solvents"
+alkahest-rxn-insight = "alkahest.cli:run_rxn_insight"
 
 [project.urls]
 Homepage = "https://solventexplorer.com"
@@ -53,7 +59,7 @@ Documentation = "https://github.com/mrodobbe/Alkahest/tree/master/docs"
 where = ["src"]
 
 [tool.setuptools.package-data]
-alkahest = ["data/*.csv", "data/*.json"]
+alkahest = ["data/*.csv", "data/*.json", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -63,3 +69,9 @@ source = ["alkahest"]
 
 [tool.coverage.report]
 show_missing = true
+fail_under = 95
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

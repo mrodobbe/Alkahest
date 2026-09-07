@@ -47,9 +47,12 @@ Arguments:
 
 - ``--input``: Path to input Parquet file
 - ``--output_dir``: Directory for output files
-- ``-i``: Start index
-- ``-n``: Number of reactions per job
+- ``-i``: Zero-based index of the current chunk
+- ``-n``: Total number of chunks
 - ``-c``: Number of CPU cores
+
+This command needs the Rxn-INSIGHT extra:
+``pip install "alkahest-chem[rxn-insight]"``.
 
 
 Example SLURM Submission

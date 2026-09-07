@@ -114,3 +114,63 @@ class TestScoreSolvent:
 
     def test_guide_is_cached(self):
         assert get_gsk_guide() is get_gsk_guide()
+
+    def test_sentinels_inside_a_mixture_are_skipped(self):
+        assert score_solvent("solvent-free.C1CCOC1") == "R"
+        assert score_solvent("C1CCOC1..O") == "R"
+        assert score_solvent("solvent-free.not-reported") == "Unknown"
+
+
+class TestScoringWithoutRdkit:
+    """Scoring must work on the shipped canonical column alone."""
+
+    @pytest.fixture
+    def no_rdkit(self, monkeypatch):
+        import sys
+
+        monkeypatch.setitem(sys.modules, "rdkit", None)
+        monkeypatch.setitem(sys.modules, "rdkit.Chem", None)
+
+    def test_canonical_column_carries_the_lookup(self, no_rdkit):
+        from alkahest.gsk import _canonicalize, _strip_isotopes
+
+        assert _canonicalize("COc1ccccc1") is None
+        assert _strip_isotopes("[2H]C(Cl)(Cl)Cl") is None
+        # Still scored, because the guide ships canonical SMILES.
+        assert score_solvent("COc1ccccc1") == "G"
+        assert score_solvent("Clc1ccccc1") == "R"
+
+    def test_deuterated_falls_back_to_the_parent_map(self, no_rdkit):
+        assert score_solvent("[2H]C(Cl)(Cl)Cl") == "R"
+        assert score_solvent("[2H]C([2H])([2H])S(=O)C([2H])([2H])[2H]") == "A"
+
+    def test_unlisted_notation_is_unknown_without_rdkit(self, no_rdkit):
+        # THF written ring-first is valid but is not one of the spellings the
+        # guide lists, so without RDKit there is nothing to match it against.
+        assert score_solvent("O1CCCC1") == "Unknown"
+
+
+class TestScoringWithRdkit:
+    def test_arbitrary_notation_resolves(self):
+        pytest.importorskip("rdkit")
+        assert score_solvent("O1CCCC1") == "R"  # THF, written ring-first
+        assert score_solvent("OC(=O)C") == "A"  # acetic acid, reversed
+
+    def test_isotopes_are_stripped_generically(self):
+        pytest.importorskip("rdkit")
+        # Chlorobenzene-d5 is not in the deuterated parent map, so it can only
+        # be scored by stripping the isotope labels down to chlorobenzene.
+        from alkahest.gsk import _DEUTERATED_TO_PARENT
+
+        chlorobenzene_d5 = "[2H]c1c([2H])c([2H])c(Cl)c([2H])c1[2H]"
+        assert chlorobenzene_d5 not in _DEUTERATED_TO_PARENT
+        assert score_solvent(chlorobenzene_d5) == "R"
+
+    def test_deuterated_solvent_absent_from_the_guide_is_unknown(self):
+        pytest.importorskip("rdkit")
+        assert score_solvent("[2H]C([2H])([2H])C([2H])([2H])[2H]") == "Unknown"
+
+    def test_invalid_smiles_is_unknown_not_an_error(self):
+        pytest.importorskip("rdkit")
+        assert score_solvent("not_a_smiles") == "Unknown"
+        assert score_solvent("C1CCOC1.not_a_smiles") == "R"

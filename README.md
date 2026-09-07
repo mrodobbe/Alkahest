@@ -2,20 +2,25 @@
 
 [![Tests](https://github.com/mrodobbe/Alkahest/actions/workflows/tests.yml/badge.svg)](https://github.com/mrodobbe/Alkahest/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/mrodobbe/Alkahest/branch/master/graph/badge.svg)](https://codecov.io/gh/mrodobbe/Alkahest)
+[![PyPI](https://img.shields.io/pypi/v/alkahest-chem.svg)](https://pypi.org/project/alkahest-chem/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 
-Solvent extraction and classification from chemical procedure texts using rule-based NLP.
+Find out which solvents a written experimental procedure actually used, and what
+role each one played.
 
-This package accompanies the paper: *The Stubborn Persistence of Toxic Solvents in Chemical Synthesis* by Maarten R. Dobbelaere and Helen F. Sneddon, accepted in *Angewandte Chemie International Edition*.
+Alkahest reads free-text procedures of the kind found in patents and papers, and
+returns the solvents as SMILES, sorted into the stage of the experiment they
+belong to. It is a rule-based pipeline: a dictionary of name variants, phase
+boundary detection, and local context rules. There is no model to train and no
+network call, so the same text always gives the same answer.
 
-An interactive companion to the study, which lets you look up the solvents actually used for a given reaction type across 1.34M USPTO reactions (1976-2016), is available at **[solventexplorer.com](https://solventexplorer.com)**.
+This package accompanies the paper *The Stubborn Persistence of Toxic Solvents in
+Chemical Synthesis* by Maarten R. Dobbelaere and Helen F. Sneddon, accepted in
+*Angewandte Chemie International Edition*.
 
-## Features
-
-- **Solvent extraction**: Identify solvents from experimental procedure texts using a dictionary of 350+ name variants (IUPAC, common names, abbreviations)
-- **Phase classification**: Classify solvents by experimental role (reaction, workup, purification, analytical) using phase boundary detection and context-aware rules
-- **NMR solvent mapping**: Map 600+ NMR solvent string variants (including typos, OCR errors) to canonical SMILES
-- **GSK scoring**: Score solvents as Green/Amber/Red using the 2016 GSK Solvent Selection Guide ([Alder et al., *Green Chem.*, 2016, 18, 3879-3890](https://doi.org/10.1039/C6GC00611F))
+An interactive companion to the study, which lets you look up the solvents
+actually used for a given reaction type across 1.34M USPTO reactions
+(1976-2016), is available at **[solventexplorer.com](https://solventexplorer.com)**.
 
 ## Installation
 
@@ -23,39 +28,24 @@ An interactive companion to the study, which lets you look up the solvents actua
 pip install alkahest-chem
 ```
 
-> **Note on the package name.** The distribution is named `alkahest-chem`; the
-> import name is `alkahest`. Do **not** run `pip install alkahest` — that name
-> belongs to an unrelated computer algebra system on PyPI.
+> **Note on the name.** The distribution is `alkahest-chem`; the import name is
+> `alkahest`. Do not run `pip install alkahest` — that name belongs to an
+> unrelated computer algebra system on PyPI.
 
-For reading Open Reaction Database (ORD) files:
-```bash
-pip install "alkahest-chem[ord]"
-```
+Optional extras:
 
-For Rxn-INSIGHT integration (reaction classification):
-```bash
-pip install "alkahest-chem[rxn-insight]"
-```
-
-For everything:
-```bash
-pip install "alkahest-chem[all]"
-```
-
-To install the development version from source:
-
-```bash
-git clone https://github.com/mrodobbe/Alkahest.git
-cd Alkahest
-pip install .
-```
+| Extra | Adds | Install |
+|---|---|---|
+| `rdkit` | SMILES canonicalisation, so GSK scoring accepts any valid notation | `pip install "alkahest-chem[rdkit]"` |
+| `ord` | Reading Open Reaction Database protocol buffer files | `pip install "alkahest-chem[ord]"` |
+| `rxn-insight` | Reaction classification via Rxn-INSIGHT | `pip install "alkahest-chem[rxn-insight]"` |
+| `all` | All of the above | `pip install "alkahest-chem[all]"` |
 
 ## Quick Start
 
 ```python
-from alkahest import extract_solvents_categorized, score_solvent, map_nmr_solvent
+from alkahest import extract_solvents_categorized
 
-# Extract solvents from a procedure text
 result = extract_solvents_categorized("""
     The compound (1.0 g) was dissolved in THF (20 mL) and stirred for 2 h.
     The mixture was quenched with water and extracted with ethyl acetate.
@@ -64,6 +54,7 @@ result = extract_solvents_categorized("""
     gave the product as a white solid (0.85 g, 78%), mp 112-114 C.
     1H NMR (400 MHz, CDCl3): delta 7.45 (d, 2H).
 """)
+
 print(result)
 # CategorizedSolvents(
 #   reaction=['thf'],
@@ -72,15 +63,63 @@ print(result)
 #   analytical=['cdcl3']
 # )
 
-# Score solvents with the GSK guide
-score_solvent("C1CCOC1")   # THF -> "R" (Red)
-score_solvent("CCOC(C)=O") # EtOAc -> "G" (Green)
-
-# Map NMR solvent names (handles typos and OCR errors)
-map_nmr_solvent("cdc13")   # ('CDCl3', '[2H]C(Cl)(Cl)Cl')
+print(result.to_smiles_dict())
+# {'reaction': 'C1CCOC1',
+#  'workup': 'CCOC(C)=O.O',
+#  'purification': 'CCCCCC.CCOC(C)=O',
+#  'analytical': '[2H]C(Cl)(Cl)Cl'}
 ```
 
-### Batch Processing
+Every solvent is placed in exactly one of four roles:
+
+| Role | Meaning | Typical cue in the text |
+|---|---|---|
+| `reaction` | the reaction medium itself | "dissolved in", "a solution of", anything before the first phase boundary |
+| `workup` | post-reaction processing | "quenched with", "extracted with", "washed with" |
+| `purification` | chromatography, recrystallisation | "column", "silica", "eluted with" |
+| `analytical` | NMR, MS and other measurements | after an "NMR" marker; deuterated solvents always land here |
+
+A category with no solvents reads `"solvent-free"` in the SMILES dict, and
+several solvents in one category are joined with `.` into a single SMILES string.
+
+### Scoring solvents
+
+`score_solvent` grades a solvent with the 2016 GSK Solvent Selection Guide.
+Mixtures take the worst component's score, and deuterated solvents are scored as
+their non-deuterated parent.
+
+```python
+from alkahest import score_solvent
+
+score_solvent("C1CCOC1")            # THF   -> 'R'  (red: major issues)
+score_solvent("CS(C)=O")            # DMSO  -> 'A'  (amber: some issues)
+score_solvent("CCOC(C)=O")          # EtOAc -> 'G'  (green: few issues)
+score_solvent("CCOC(C)=O.C1CCOC1")  # worst of the two -> 'R'
+score_solvent("[2H]C(Cl)(Cl)Cl")    # CDCl3, scored as chloroform -> 'R'
+score_solvent("CCN(C(C)C)C(C)C")    # DIPEA, not in the guide -> 'Unknown'
+```
+
+### NMR solvents
+
+Patent text spells NMR solvents in hundreds of ways, including OCR damage.
+`map_nmr_solvent` resolves them to a canonical name and SMILES, and returns
+`None` for anything it does not recognise.
+
+```python
+from alkahest import map_nmr_solvent
+
+map_nmr_solvent("CDCl3")     # ('CDCl3', '[2H]C(Cl)(Cl)Cl')
+map_nmr_solvent("cdc13")     # OCR damage, digit 1 for letter l -> same result
+map_nmr_solvent("dmso-d6")   # ('DMSO-d6', '[2H]C([2H])([2H])S(=O)C([2H])([2H])[2H]')
+map_nmr_solvent("meod")      # ('CD3OD', '[2H]C([2H])([2H])O[2H]')
+map_nmr_solvent("xyzzy")     # None
+```
+
+### Whole DataFrames
+
+`extract_solvents_batch` adds four columns to a DataFrame of procedures. It
+modifies the frame in place and returns it, so pass a copy if you need the
+original untouched.
 
 ```python
 import pandas as pd
@@ -88,39 +127,64 @@ from alkahest import extract_solvents_batch
 
 df = pd.read_parquet("reactions.parquet")
 df = extract_solvents_batch(df, procedure_column="procedure")
-# Adds: SOLV_RXN, SOLV_WORKUP, SOLV_PURIF, SOLV_ANAL
+# Adds SOLV_RXN, SOLV_WORKUP, SOLV_PURIF, SOLV_ANAL
 ```
 
-## HPC Scripts
+## Command line
 
-For processing large datasets in parallel:
+Installing the package provides two commands. Both split their input into
+chunks, so a large corpus can run as an array job on a cluster.
 
 ```bash
-# Rxn-INSIGHT reaction analysis
-python scripts/run_rxn_insight.py --input data.parquet --output_dir output/ -i 0 -n 1000 -c 6
+# Solvent extraction: chunk 0 of 130
+alkahest-extract --input reactions.parquet --output_dir output/ \
+    --job_index 0 --n_chunks 130
 
-# Solvent extraction
-python scripts/extract_solvents.py --input data.parquet --output_dir output/ --job_index 0 --n_chunks 130
+# Rxn-INSIGHT reaction analysis, 6 cores
+alkahest-rxn-insight --input reactions.parquet --output_dir output/ \
+    -i 0 -n 1000 -c 6
 ```
 
-## Scope and limitations
+Chunk `i` of `n` covers rows `i * len(df) // n` to `(i + 1) * len(df) // n`, so
+the chunks tile the input exactly whatever the row count. Under SLURM:
 
-The extractor is a dictionary and regex pipeline tuned for the high-volume
-patterns of USPTO patent prose, not a general-purpose chemical named-entity
-recogniser. It is deliberately recall-oriented, and the published analysis
-relies on aggregate trends across 1.34M reactions rather than on any single
-procedure being parsed perfectly. Two consequences are worth knowing before
-reusing it on other corpora:
+```bash
+#SBATCH --array=0-129
+alkahest-extract --input reactions.parquet --output_dir output/ \
+    --job_index $SLURM_ARRAY_TASK_ID --n_chunks 130
+```
 
-- Short dictionary keys collide with common non-solvent tokens. `EDC` (the
-  coupling reagent) matches 1,2-dichloroethane, `DEC` (as in a decomposition
-  melting point) matches diethyl carbonate, and `DMA` matches
-  N,N-dimethylaniline rather than dimethylacetamide.
-- Names are matched independently rather than consumed longest-first, so a
-  span may be counted twice. "Petroleum ether" also registers diethyl ether.
+## API
 
-Solvent identities are reported as SMILES; role assignment near a phase
-boundary is heuristic and is the least reliable part of the output.
+| Function | Returns |
+|---|---|
+| `extract_solvents_categorized(text)` | `CategorizedSolvents` with a dict per role |
+| `extract_solvents_batch(df, ...)` | the DataFrame, with four solvent columns added |
+| `find_phase_boundaries(text)` | character offset where each phase begins, or `None` |
+| `score_solvent(smiles)` | `'G'`, `'A'`, `'R'` or `'Unknown'` |
+| `get_gsk_guide()` | the guide as a DataFrame |
+| `map_nmr_solvent(text)` | `(name, smiles)` or `None` |
+| `extract_nmr_snippet(procedure)` | the raw solvent snippet following "NMR" |
+| `curate_nmr_snippet(snippet)` | that snippet with frequencies and shifts stripped |
+
+The dictionaries are importable too: `SOLVENT_DICT`, `DEUTERATED_SOLVENTS` and
+`NMR_SOLVENT_DICTIONARY`.
+
+## Development
+
+```bash
+git clone https://github.com/mrodobbe/Alkahest.git
+cd Alkahest
+pip install -e ".[test]"
+pytest --cov=alkahest --cov-report=term-missing
+```
+
+The HTML documentation is built with Sphinx:
+
+```bash
+pip install ".[docs]"
+sphinx-build -b html docs docs/_build/html
+```
 
 ## License
 

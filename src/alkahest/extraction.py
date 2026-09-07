@@ -246,6 +246,13 @@ def extract_solvents_batch(
     """
     from tqdm import tqdm
 
+    columns = [f"{prefix}{s}" for s in ("RXN", "WORKUP", "PURIF", "ANAL")]
+
+    if len(df) == 0:
+        for column in columns:
+            df[column] = pd.Series(dtype="object")
+        return df
+
     tqdm.pandas(desc="Extracting solvents")
 
     new_cols = df.progress_apply(
@@ -253,9 +260,7 @@ def extract_solvents_batch(
         axis=1,
     )
 
-    df[f"{prefix}RXN"] = new_cols[0]
-    df[f"{prefix}WORKUP"] = new_cols[1]
-    df[f"{prefix}PURIF"] = new_cols[2]
-    df[f"{prefix}ANAL"] = new_cols[3]
+    for position, column in enumerate(columns):
+        df[column] = new_cols[position]
 
     return df

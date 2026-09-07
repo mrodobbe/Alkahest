@@ -131,6 +131,15 @@ class TestExtractSolventsBatch:
         result = extract_solvents_batch(df, procedure_column="text", prefix="MY_")
         assert "MY_RXN" in result.columns
 
+    def test_empty_dataframe(self):
+        # Regression: progress_apply on an empty frame returns an empty
+        # DataFrame with no columns, which used to raise KeyError.
+        df = pd.DataFrame({"procedure": []})
+        result = extract_solvents_batch(df, procedure_column="procedure")
+        assert len(result) == 0
+        for column in ("SOLV_RXN", "SOLV_WORKUP", "SOLV_PURIF", "SOLV_ANAL"):
+            assert column in result.columns
+
     def test_single_row(self):
         df = pd.DataFrame({"procedure": ["Dissolved in DMSO and stirred."]})
         result = extract_solvents_batch(df, procedure_column="procedure")

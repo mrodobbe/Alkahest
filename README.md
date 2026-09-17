@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/mrodobbe/Alkahest/branch/master/graph/badge.svg)](https://codecov.io/gh/mrodobbe/Alkahest)
 [![PyPI](https://img.shields.io/pypi/v/alkahest-chem.svg)](https://pypi.org/project/alkahest-chem/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![DOI](https://img.shields.io/badge/DOI-10.1002%2Fanie.1677569-blue.svg)](https://doi.org/10.1002/anie.1677569)
 
 Find out which solvents a written experimental procedure actually used, and what
 role each one played.
@@ -14,13 +15,15 @@ belong to. It is a rule-based pipeline: a dictionary of name variants, phase
 boundary detection, and local context rules. There is no model to train and no
 network call, so the same text always gives the same answer.
 
-This package accompanies the paper *The Stubborn Persistence of Toxic Solvents in
-Chemical Synthesis* by Maarten R. Dobbelaere and Helen F. Sneddon, accepted in
-*Angewandte Chemie International Edition*.
+This package accompanies the paper [*The Stubborn Persistence of Toxic Solvents
+in Chemical Synthesis*](https://doi.org/10.1002/anie.1677569) by Maarten R.
+Dobbelaere and Helen F. Sneddon, published in *Angewandte Chemie International
+Edition*.
 
-An interactive companion to the study, which lets you look up the solvents
-actually used for a given reaction type across 1.34M USPTO reactions
-(1976-2016), will be released soon.
+An interactive companion to the study is available at
+[solventexplorer.com](https://solventexplorer.com). It lets you look up the
+solvents actually used for a given reaction type across 1.34M USPTO reactions
+(1976-2016), or draw a reaction and have it matched to its class.
 
 ## Installation
 
@@ -196,7 +199,20 @@ If you use this software, please cite:
 
 ```
 M. R. Dobbelaere and H. F. Sneddon, "The Stubborn Persistence of Toxic Solvents
-in Chemical Synthesis", Angew. Chem. Int. Ed., 2026, accepted.
+in Chemical Synthesis", Angew. Chem. Int. Ed., 2026, e1677569.
+DOI: 10.1002/anie.1677569
+```
+
+```bibtex
+@article{dobbelaere2026stubborn,
+  author  = {Dobbelaere, Maarten R. and Sneddon, Helen F.},
+  title   = {The Stubborn Persistence of Toxic Solvents in Chemical Synthesis},
+  journal = {Angewandte Chemie International Edition},
+  year    = {2026},
+  pages   = {e1677569},
+  doi     = {10.1002/anie.1677569},
+  url     = {https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.1677569}
+}
 ```
 
 If you use the GSK solvent scoring functionality (`score_solvent`, `get_gsk_guide`), please also cite the original guide:

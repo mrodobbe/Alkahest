@@ -1,4 +1,4 @@
-# Alkahest
+# Alkahest · [solventexplorer.com](https://solventexplorer.com)
 
 [![Tests](https://github.com/mrodobbe/Alkahest/actions/workflows/tests.yml/badge.svg)](https://github.com/mrodobbe/Alkahest/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/mrodobbe/Alkahest/branch/master/graph/badge.svg)](https://codecov.io/gh/mrodobbe/Alkahest)
